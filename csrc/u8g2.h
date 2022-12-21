@@ -68,7 +68,7 @@
   Use 16 Bit mode for any display with more than 240 pixel in one 
   direction.
 */
-//#define U8G2_16BIT
+#define U8G2_16BIT
 
 
 /* always enable U8G2_16BIT on 32bit environments, see issue https://github.com/olikraus/u8g2/issues/1222 */
@@ -221,6 +221,7 @@ typedef struct u8g2_cb_struct u8g2_cb_t;
 
 typedef void (*u8g2_update_dimension_cb)(u8g2_t *u8g2);
 typedef void (*u8g2_update_page_win_cb)(u8g2_t *u8g2);
+typedef void (*u8g2_get_rect_l90_cb)(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h);
 typedef void (*u8g2_draw_l90_cb)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 typedef void (*u8g2_draw_ll_hvline_cb)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 
@@ -305,6 +306,7 @@ struct u8g2_cb_struct
 {
   u8g2_update_dimension_cb update_dimension;
   u8g2_update_page_win_cb update_page_win;
+  u8g2_get_rect_l90_cb get_rect_l90;
   u8g2_draw_l90_cb draw_l90;
 };
 
@@ -1495,6 +1497,7 @@ void u8g2_Setup_a2printer_384x240_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x
 
 void u8g2_SendBuffer(u8g2_t *u8g2);
 void u8g2_ClearBuffer(u8g2_t *u8g2);
+void u8g2_ClearBufferPixelArea(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h);
 
 void u8g2_SetBufferCurrTileRow(u8g2_t *u8g2, uint8_t row) U8G2_NOINLINE;
 
@@ -1519,6 +1522,7 @@ uint8_t u8g2_NextPage(u8g2_t *u8g2);
 #define u8g2_GetBufferCurrTileRow(u8g2) ((u8g2)->tile_curr_row)
 
 void u8g2_UpdateDisplayArea(u8g2_t *u8g2, uint8_t  tx, uint8_t ty, uint8_t tw, uint8_t th);
+void u8g2_UpdateDisplayPixelArea(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h);
 void u8g2_UpdateDisplay(u8g2_t *u8g2);
 
 void u8g2_WriteBufferPBM(u8g2_t *u8g2, void (*out)(const char *s));

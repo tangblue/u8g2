@@ -305,6 +305,10 @@ void u8g2_update_page_win_r3(u8g2_t *u8g2)
 extern void u8g2_draw_hv_line_2dir(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 
 
+void u8g2_get_rect_l90_r0(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+}
+
 void u8g2_draw_l90_r0(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
 {
 #ifdef __unix
@@ -313,145 +317,183 @@ void u8g2_draw_l90_r0(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t le
   u8g2_draw_hv_line_2dir(u8g2, x, y, len, dir);
 }
 
-void u8g2_draw_l90_mirrorr_r0(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
+static inline void _get_rect_l90_mirror_r0(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
 {
-  u8g2_uint_t xx;
-  xx = u8g2->width;
-  xx -= x;
+  *x = u8g2->width - *x;
+  if (w != NULL)
+  {
+    *x -= *w;
+  }
+}
+void u8g2_get_rect_l90_mirror_r0(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  return _get_rect_l90_mirror_r0(u8g2, x, y, w, h);
+}
+
+void u8g2_draw_l90_mirror_r0(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
+{
+  _get_rect_l90_mirror_r0(u8g2, &x, &y, NULL, NULL);
   if ( (dir & 1) == 0 )
   {
-    xx -= len;
+    x -= len;
   }
   else
   {
-    xx--;
+    x--;
   }
-  u8g2_draw_hv_line_2dir(u8g2, xx, y, len, dir);
+  u8g2_draw_hv_line_2dir(u8g2, x, y, len, dir);
+}
+
+
+static inline void _get_rect_l90_mirror_vertical_r0(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  *y = u8g2->height - *y;
+  if (h != NULL)
+  {
+    *y -= *h;
+  }
+}
+void u8g2_get_rect_l90_mirror_vertical_r0(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  return _get_rect_l90_mirror_vertical_r0(u8g2, x, y, w, h);
 }
 
 void u8g2_draw_mirror_vertical_r0(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
 {
-  u8g2_uint_t yy;
-  yy = u8g2->height;
-  yy -= y;
+  _get_rect_l90_mirror_vertical_r0(u8g2, &x, &y, NULL, NULL);
   if ( (dir & 1) == 1 )
   {
-    yy -= len;
+    y -= len;
   }
   else
   {
-    yy--;
+    y--;
   }
-  u8g2_draw_hv_line_2dir(u8g2, x, yy, len, dir);
+  u8g2_draw_hv_line_2dir(u8g2, x, y, len, dir);
+}
+
+
+static inline void _get_rect_l90_r1(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  u8g2_uint_t tmp = *x;
+  *x = u8g2->height - *y;
+  *y = tmp;
+
+  if (h != NULL)
+  {
+    tmp = *h;
+    *x -= tmp;
+    *h = *w;
+    *w = tmp;
+  }
+}
+void u8g2_get_rect_l90_r1(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  return _get_rect_l90_r1(u8g2, x, y, w, h);
 }
 
 /* dir = 0 or 1 */
 void u8g2_draw_l90_r1(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
 {
-  u8g2_uint_t xx, yy;
-
 #ifdef __unix
   assert( dir <= 1 );
 #endif
-  
-  yy = x;
-  
-  xx = u8g2->height;
-  xx -= y;
-  xx--;
+
+  _get_rect_l90_r1(u8g2, &x, &y, NULL, NULL);
   
   dir ++;
   if ( dir == 2 )
   {
-    xx -= len;
-    xx++;
+    x -= len;
     dir = 0;
+  } else {
+    x--;
   }
   
-  u8g2_draw_hv_line_2dir(u8g2, xx, yy, len, dir);
+  u8g2_draw_hv_line_2dir(u8g2, x, y, len, dir);
+}
+
+static inline void _get_rect_l90_r2(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  *x = u8g2->width  - *x;
+  *y = u8g2->height - *y;
+  if (w != NULL)
+  {
+    *x -= *w;
+    *y -= *h;
+  }
+}
+void u8g2_get_rect_l90_r2(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  return _get_rect_l90_r2(u8g2, x, y, w, h);
 }
 
 void u8g2_draw_l90_r2(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
 {
-  u8g2_uint_t xx, yy;
-
-  /*
-  yy = u8g2->height;
-  yy -= y;
-  yy--;
-  
-  xx = u8g2->width;
-  xx -= x;
-  xx--;
+  _get_rect_l90_r2(u8g2, &x, &y, NULL, NULL);
   
   if ( dir == 0 )
   {
-    xx -= len;
-    xx++;
+    y--;
+    x -= len;
   }
   else if ( dir == 1 )
   {
-    yy -= len;
-    yy++;
-  }
-  */
-
-  yy = u8g2->height;
-  yy -= y;
-  
-  xx = u8g2->width;
-  xx -= x;
-  
-  if ( dir == 0 )
-  {
-    yy--;
-    xx -= len;
-  }
-  else if ( dir == 1 )
-  {
-    xx--;
-    yy -= len;
+    x--;
+    y -= len;
   }
 
-  u8g2_draw_hv_line_2dir(u8g2, xx, yy, len, dir);
+  u8g2_draw_hv_line_2dir(u8g2, x, y, len, dir);
+}
+
+static inline void _get_rect_l90_r3(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  u8g2_uint_t tmp = *y;
+  *y = u8g2->width - *x;
+  *x = tmp;
+
+  if (w != NULL)
+  {
+    tmp = *w;
+    *y -= tmp;
+    *w = *h;
+    *h = tmp;
+  }
+}
+void u8g2_get_rect_l90_r3(u8g2_t *u8g2, u8g2_uint_t *x, u8g2_uint_t *y, u8g2_uint_t *w, u8g2_uint_t *h)
+{
+  return _get_rect_l90_r3(u8g2, x, y, w, h);
 }
 
 void u8g2_draw_l90_r3(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
 {
-  u8g2_uint_t xx, yy;
+  _get_rect_l90_r3(u8g2, &x, &y, NULL, NULL);
 
-  xx = y;
-  
-  yy = u8g2->width;
-  yy -= x;
-  
   if ( dir == 0 )
   {
-    yy--;
-    yy -= len;
-    yy++;
+    y -= len;
     dir = 1;
   }
   else
   {
-    yy--;
+    y--;
     dir = 0;
   }
   
   
-  u8g2_draw_hv_line_2dir(u8g2, xx, yy, len, dir);
+  u8g2_draw_hv_line_2dir(u8g2, x, y, len, dir);
 }
 
 
 
 /*============================================*/
-const u8g2_cb_t u8g2_cb_r0 = { u8g2_update_dimension_r0, u8g2_update_page_win_r0, u8g2_draw_l90_r0 };
-const u8g2_cb_t u8g2_cb_r1 = { u8g2_update_dimension_r1, u8g2_update_page_win_r1, u8g2_draw_l90_r1 };
-const u8g2_cb_t u8g2_cb_r2 = { u8g2_update_dimension_r2, u8g2_update_page_win_r2, u8g2_draw_l90_r2 };
-const u8g2_cb_t u8g2_cb_r3 = { u8g2_update_dimension_r3, u8g2_update_page_win_r3, u8g2_draw_l90_r3 };
+const u8g2_cb_t u8g2_cb_r0 = { u8g2_update_dimension_r0, u8g2_update_page_win_r0, u8g2_get_rect_l90_r0, u8g2_draw_l90_r0 };
+const u8g2_cb_t u8g2_cb_r1 = { u8g2_update_dimension_r1, u8g2_update_page_win_r1, u8g2_get_rect_l90_r1, u8g2_draw_l90_r1 };
+const u8g2_cb_t u8g2_cb_r2 = { u8g2_update_dimension_r2, u8g2_update_page_win_r2, u8g2_get_rect_l90_r2, u8g2_draw_l90_r2 };
+const u8g2_cb_t u8g2_cb_r3 = { u8g2_update_dimension_r3, u8g2_update_page_win_r3, u8g2_get_rect_l90_r3, u8g2_draw_l90_r3 };
   
-const u8g2_cb_t u8g2_cb_mirror = { u8g2_update_dimension_r0, u8g2_update_page_win_r0, u8g2_draw_l90_mirrorr_r0 };
-const u8g2_cb_t u8g2_cb_mirror_vertical = { u8g2_update_dimension_r0, u8g2_update_page_win_r0, u8g2_draw_mirror_vertical_r0 };
+const u8g2_cb_t u8g2_cb_mirror = { u8g2_update_dimension_r0, u8g2_update_page_win_r0, u8g2_get_rect_l90_mirror_r0, u8g2_draw_l90_mirror_r0 };
+const u8g2_cb_t u8g2_cb_mirror_vertical = { u8g2_update_dimension_r0, u8g2_update_page_win_r0, u8g2_get_rect_l90_mirror_vertical_r0, u8g2_draw_mirror_vertical_r0 };
   
 /*============================================*/
 /* setup for the null device */

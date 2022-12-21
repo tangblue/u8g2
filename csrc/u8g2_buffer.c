@@ -46,6 +46,47 @@ void u8g2_ClearBuffer(u8g2_t *u8g2)
   memset(u8g2->tile_buf_ptr, 0, cnt);
 }
 
+void u8g2_ClearBufferPixelArea(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h)
+{
+  uint16_t page_size;
+  uint8_t *ptr;
+
+  if ( u8g2->tile_buf_height != u8g2_GetU8x8(u8g2)->display_info->tile_height )
+    return;
+
+  page_size = u8g2->pixel_buf_width;
+
+  u8g2->cb->get_rect_l90(u8g2, &x, &y, &w, &h);
+  ptr = u8g2_GetBufferPtr(u8g2);
+  ptr += page_size*(y/8);
+  ptr += x;
+
+  while (h > 0) {
+    u8g2_uint_t _y = (y & 7);
+    u8g2_uint_t _h = 8 - _y;
+#ifdef TILE_PIXEL0_BIT7
+    uint8_t mask = ~((1 << (8 - _y)) - 1);
+    if ((_y + h) < 8) {
+      mask |= ((1 << (8 - (_y + h))) - 1);
+      _h = h;
+    }
+#else /* TILE_PIXEL0_BIT0 */
+    uint8_t mask = ((1 << _y) - 1);
+    if ((_y + h) < 8) {
+      mask |= ~((1 << (_y + h)) - 1);
+      _h = h;
+    }
+#endif
+    for (u8g2_uint_t _w = 0; _w < w; _w++) {
+      ptr[_w] &= mask;
+    }
+
+    ptr += page_size;
+    y += _h;
+    h -= _h;
+  }
+}
+
 /*============================================*/
 
 static void u8g2_send_tile_row(u8g2_t *u8g2, uint8_t src_tile_row, uint8_t dest_tile_row)
@@ -172,6 +213,11 @@ void u8g2_UpdateDisplayArea(u8g2_t *u8g2, uint8_t  tx, uint8_t ty, uint8_t tw, u
     ty++;
     th--;
   }  
+}
+
+void u8g2_UpdateDisplayPixelArea(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h) {
+  u8g2->cb->get_rect_l90(u8g2, &x, &y, &w, &h);
+  u8g2_UpdateDisplayArea(u8g2, x >> 3, y >> 3, ((x & 7) + w + 7) >> 3, ((y & 7) + h + 7) >> 3);
 }
 
 /* same as sendBuffer, but does not send the ePaper refresh message */
